@@ -1,0 +1,83 @@
+#EXP 3 b.
+#Aim: Classification of a 4-class problem with a perceptron
+#Objective: To Train a Perceptron network with 2-inputs and 2-outputs to classify input vectors into 4 categories
+import numpy as np
+import matplotlib.pyplot as plt
+
+class Perceptron:
+    def __init__(self, input_size, output_size, learning_rate=0.1):
+        self.learning_rate = learning_rate
+        self.weights = np.random.rand(input_size, output_size)
+        self.bias = np.random.rand(output_size)
+
+    # The activation function is a step function
+    def activation(self, x):
+        return np.where(x >= 0.5, 1, 0)
+
+    # Forward pass: compute output
+    def forward(self, x):
+        return self.activation(np.dot(x, self.weights) + self.bias)
+
+    # Training process: adjust weights and biases
+    def train(self, X, Y, epochs):
+        for _ in range(epochs):
+            for i in range(len(X)):
+                output = self.forward(X[i])
+                error = Y[i] - output
+                self.weights += self.learning_rate * np.outer(X[i], error)
+                self.bias += self.learning_rate * error
+
+# Input vectors
+X = np.array([[0, 0],
+              [0, 1],
+              [1, 0],
+              [1, 1]])
+
+# Binary encoded output vectors (2 outputs for 4 classes)
+Y = np.array([[0, 0],  # Class 0
+              [0, 1],  # Class 1
+              [1, 0],  # Class 2
+              [1, 1]]) # Class 3
+
+# Initialize the perceptron
+input_size = 2
+output_size = 2  # Binary encoding: 2 outputs
+learning_rate = 0.1
+epochs = 100
+
+perceptron = Perceptron(input_size, output_size, learning_rate)
+perceptron.train(X, Y, epochs)
+
+# Test the perceptron and print results
+print("Testing the perceptron:")
+for i in range(len(X)):
+    output = perceptron.forward(X[i])
+    print(f"Input: {X[i]}, Predicted Output: {output}, Actual Output: {Y[i]}")
+
+# Function to plot decision boundaries
+def plot_decision_boundary(perceptron, X, Y):
+    # Create a grid of points to test
+    x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
+    y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.01),
+                         np.arange(y_min, y_max, 0.01))
+
+    # Predict classes for each point in the grid
+    grid_points = np.c_[xx.ravel(), yy.ravel()]
+    predictions = np.array([perceptron.forward(point) for point in grid_points])
+    # Combine binary outputs into class labels (e.g., [0, 1] → Class 1)
+    class_labels = np.dot(predictions, [1, 2])  # Map binary outputs to class indices
+
+    # Reshape predictions to match grid
+    Z = class_labels.reshape(xx.shape)
+
+    # Plot decision boundaries
+    plt.contourf(xx, yy, Z, alpha=0.8, cmap=plt.cm.Paired)
+    plt.scatter(X[:, 0], X[:, 1], c=np.dot(Y, [1, 2]), cmap=plt.cm.Paired, edgecolors='k')
+    plt.xlabel('Input 1')
+    plt.ylabel('Input 2')
+    plt.title('Decision Boundaries')
+    plt.show()
+
+# Visualize decision boundaries
+plot_decision_boundary(perceptron, X, Y)
