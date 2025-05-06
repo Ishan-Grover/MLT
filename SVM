@@ -1,0 +1,58 @@
+#You are provided with a subset of the Fisher’s Iris dataset, containing measurements of petal length and petal width for two types of flowers: Iris Setosa and Iris Versicolor. Your task is to:
+
+#Classify the flower species using a Support Vector Machine (SVM) based on the two selected features.
+#Train an SVM model using a linear kernel to separate the two classes.
+#Visualize the classification results, including the decision boundary and support vectors.
+#Interpret the model’s decision boundary and understand the role of support vectors in determining the margin.
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import svm, datasets
+from sklearn.model_selection import train_test_split
+
+# Load the Iris dataset
+iris = datasets.load_iris()
+X = iris.data[:, 2:4]  # Petal length and petal width
+y = iris.target
+
+# Filter for Setosa (0) and Versicolor (1) only
+mask = y < 2
+X = X[mask]
+y = y[mask]
+
+# Train SVM with linear kernel
+model = svm.SVC(kernel='linear', C=1.0)
+model.fit(X, y)
+
+# Plotting
+def plot_svm_decision_boundary(X, y, model):
+    plt.figure(figsize=(8, 6))
+
+    # Plot data points
+    plt.scatter(X[:, 0], X[:, 1], c=y, cmap='coolwarm', s=30, edgecolors='k', label="Data")
+
+    # Create grid to evaluate model
+    ax = plt.gca()
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+
+    xx, yy = np.meshgrid(np.linspace(xlim[0], xlim[1], 100),
+                         np.linspace(ylim[0], ylim[1], 100))
+    xy = np.vstack([xx.ravel(), yy.ravel()]).T
+    Z = model.decision_function(xy).reshape(xx.shape)
+
+    # Plot decision boundary and margins
+    plt.contour(xx, yy, Z, colors='k', levels=[-1, 0, 1], linestyles=['--', '-', '--'])
+
+    # Highlight support vectors
+    plt.scatter(model.support_vectors_[:, 0],
+                model.support_vectors_[:, 1],
+                s=100, linewidth=1, facecolors='none', edgecolors='k', label="Support Vectors")
+
+    plt.xlabel("Petal length (cm)")
+    plt.ylabel("Petal width (cm)")
+    plt.title("SVM Decision Boundary with Linear Kernel")
+    plt.legend()
+    plt.show()
+
+plot_svm_decision_boundary(X, y, model)
