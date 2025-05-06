@@ -1,0 +1,67 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Generate random data
+np.random.seed(42)
+matrix_15x2 = np.c_[np.ones((15, 1)), np.random.rand(15, 1)]  # 15 points with bias term and one feature
+Y = 4 + 3 * matrix_15x2[:, 1].reshape(-1, 1) + np.random.randn(15, 1)  # Target values with noise
+
+# Plot the generated data
+plt.scatter(matrix_15x2[:, 1], Y, color='blue', label='Data Points')
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.title("Generated Data (15 Points)")
+plt.legend()
+plt.show()
+
+# Initialize parameters randomly
+theta = np.random.randn(2, 1)  # theta0 and theta1
+initial_theta = theta.copy()  # Store initial theta values
+learning_rate = 0.05
+iterations = 100  # Increased iterations for better convergence
+
+# Print initial matrix
+print("Initial Matrix (15x2):")
+print(matrix_15x2)
+
+print("\nTheta Matrix (2x1):")
+print(theta)
+
+# Gradient Descent
+m = len(Y)
+cost_history = []
+for i in range(iterations):
+    predictions = matrix_15x2.dot(theta)  # Matrix multiplication
+    errors = predictions - Y
+    cost = (1 / (2 * m)) * np.sum(errors ** 2)
+    cost_history.append(cost)
+
+    # Compute gradients using matrix multiplication
+    gradients = (1 / m) * (matrix_15x2.T.dot(errors))
+    theta = theta - learning_rate * gradients  # Update theta
+
+# Final Output Matrix (15x1)
+output_matrix = matrix_15x2.dot(theta)
+print("\nFinal Output Matrix (15x1):")
+print(output_matrix)
+
+# Plot Initial and Final Fit Line
+plt.scatter(matrix_15x2[:, 1], Y, color='blue', label='Data Points')
+X_vals = np.linspace(0, 1, 100).reshape(-1, 1)
+X_vals_b = np.c_[np.ones((100, 1)), X_vals]
+plt.plot(X_vals, X_vals_b.dot(initial_theta), color='green', linestyle='dashed', label='Initial Fit Line')
+plt.plot(X_vals, X_vals_b.dot(theta), color='red', label='Final Fit Line')
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.title("Initial and Final Fit Line")
+plt.legend()
+plt.show()
+
+# Plot Cost Function vs. Iterations
+plt.plot(range(iterations), cost_history, color='purple', marker='o', linestyle='dashed')
+plt.xlabel("Iterations")
+plt.ylabel("Cost Function")
+plt.title("Cost Function vs. Iterations")
+plt.show()
+
+print(f"Final Parameters: {theta.ravel()}")
