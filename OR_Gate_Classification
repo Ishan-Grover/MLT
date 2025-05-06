@@ -1,0 +1,41 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# OR Gate Truth Table
+data = np.array([
+    [0, 0, 0],  # Class 0 (Red)
+    [0, 1, 1],  # Class 1 (Blue)
+    [1, 0, 1],  # Class 1 (Blue)
+    [1, 1, 1],  # Class 1 (Blue)
+])
+
+# Separate data points for plotting
+x0, y0 = data[data[:, 2] == 0][:, 0], data[data[:, 2] == 0][:, 1]  # Class 0 (Red)
+x1, y1 = data[data[:, 2] == 1][:, 0], data[data[:, 2] == 1][:, 1]  # Class 1 (Blue)
+
+# Plot the points
+plt.scatter(x0, y0, color='red', label="Class 0 (False)", s=100)
+plt.scatter(x1, y1, color='blue', label="Class 1 (True)", s=100)
+
+# Define OR perceptron weights
+w1, w2 = 1, 1
+b = -0.5  # Bias
+
+# Generate decision boundary
+x_values = np.linspace(-0.1, 1.1, 100)
+y_values = (0.5 - w1 * x_values) / w2  # Decision boundary equation for OR
+
+# Plot decision boundary
+plt.plot(x_values, y_values, 'k--', label="Decision Boundary")
+
+# Set axis limits and labels
+plt.xlim(-0.1, 1.1)
+plt.ylim(-0.1, 1.1)
+plt.xticks([0, 1])
+plt.yticks([0, 1])
+plt.xlabel("x1")
+plt.ylabel("x2")
+plt.title("Perceptron Decision Boundary for OR Gate")
+plt.legend()
+plt.grid()
+plt.show()
