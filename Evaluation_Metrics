@@ -1,0 +1,103 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.metrics import auc  # Import AUC computation function
+
+# Step 1: Generate the table with the specified columns
+np.random.seed(42)  # For reproducibility(Same random data is generated everytime code is run)
+n_samples = 50
+
+# Create the dataset
+data = {
+    "samples": np.arange(1, n_samples + 1),
+    "ground_truth": np.random.choice([0, 1], size=n_samples),  # Binary ground truth
+    "probability": np.random.rand(n_samples),  # Random probabilities
+}
+
+df = pd.DataFrame(data)#Converts the data dictionary into a pandas DataFrame for easy handling and analysis.
+
+# Display the generated table
+print("Generated Data:")
+print(df)
+
+# Step 2: Set a threshold and calculate predictions
+threshold = 0.5  # You can change this threshold
+df["predicted"] = (df["probability"] >= threshold).astype(int)
+#A new column, predicted, is created where samples with a probability ≥ 0.5 are classified as 1 (positive), and the rest as 0 (negative).
+
+# Step 3: Compute confusion matrix manually
+#TP (True Positives): Cases where the model predicted 1, and the ground truth is also 1.
+#TN (True Negatives): Cases where the model predicted 0, and the ground truth is also 0.
+#FP (False Positives): Cases where the model predicted 1, but the ground truth is 0.
+#FN (False Negatives): Cases where the model predicted 0, but the ground truth is 1.
+TP = np.sum((df["ground_truth"] == 1) & (df["predicted"] == 1))
+TN = np.sum((df["ground_truth"] == 0) & (df["predicted"] == 0))
+FP = np.sum((df["ground_truth"] == 0) & (df["predicted"] == 1))
+FN = np.sum((df["ground_truth"] == 1) & (df["predicted"] == 0))
+
+# Display TP, TN, FP, FN counts
+print(f"\nTrue Positives (TP): {TP}")
+print(f"True Negatives (TN): {TN}")
+print(f"False Positives (FP): {FP}")
+print(f"False Negatives (FN): {FN}")
+
+# Step 4: Compute metrics manually
+accuracy = (TP + TN) / n_samples
+precision = TP / (TP + FP) if (TP + FP) > 0 else 0
+recall = TP / (TP + FN) if (TP + FN) > 0 else 0
+f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+
+# Display computed metrics
+print(f"\nAccuracy: {accuracy:.2f}")
+print(f"Precision: {precision:.2f}")
+print(f"Recall: {recall:.2f}")
+print(f"F1 Score: {f1:.2f}")
+
+# Confusion matrix
+conf_matrix = np.array([[TN, FP], [FN, TP]])
+
+# Step 5: Display Confusion Matrix
+print("\nConfusion Matrix:")
+print(conf_matrix)
+
+# Step 6: Compute ROC Curve Without Functions
+# Sort the dataframe by probability in descending order
+df_sorted = df.sort_values(by="probability", ascending=False)
+
+# Initialize lists to store TPR and FPR values
+tpr_values = []
+fpr_values = []
+
+# Calculate TPR and FPR for each unique threshold
+thresholds = np.unique(df_sorted["probability"])
+for threshold in thresholds:
+    # Predict based on the threshold
+    df_sorted["predicted"] = (df_sorted["probability"] >= threshold).astype(int)
+
+    # Calculate TP, FP, FN, and TN
+    TP = np.sum((df_sorted["ground_truth"] == 1) & (df_sorted["predicted"] == 1))
+    TN = np.sum((df_sorted["ground_truth"] == 0) & (df_sorted["predicted"] == 0))
+    FP = np.sum((df_sorted["ground_truth"] == 0) & (df_sorted["predicted"] == 1))
+    FN = np.sum((df_sorted["ground_truth"] == 1) & (df_sorted["predicted"] == 0))
+
+    # Calculate TPR and FPR
+    tpr = TP / (TP + FN) if (TP + FN) > 0 else 0
+    fpr = FP / (FP + TN) if (FP + TN) > 0 else 0
+
+    # Append the values
+    tpr_values.append(tpr)
+    fpr_values.append(fpr)
+roc_auc = auc(fpr_values, tpr_values)
+# Step 7: Plot the ROC Curve
+plt.figure(figsize=(8, 6))
+plt.plot(fpr_values, tpr_values, color='blue', label='ROC Curve')
+plt.plot([0, 1], [0, 1], color='red', linestyle='--', label='Random Guess')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC) Curve')
+plt.legend(loc="lower right")
+plt.grid()
+plt.show()
+
+# Print AUC value
+print(f"\nArea Under Curve (AUC): {roc_auc:.2f}")
