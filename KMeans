@@ -1,0 +1,75 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Step 1: Generate data from two different distributions
+np.random.seed(42)
+cluster1 = np.random.normal(loc=[2, 2], scale=[1, 1], size=(150, 2))  # Normal Distribution
+cluster2 = np.random.poisson(lam=[8, 8], size=(150, 2))  # Poisson Distribution
+X = np.vstack((cluster1, cluster2))  # Combine both clusters
+
+# Step 2: Show Initial Data (Before Clustering)
+plt.scatter(X[:, 0], X[:, 1], marker='o', edgecolor='k', s=50, color='gray')
+plt.title("Step 1: Initial Data (Unclustered)")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.show()
+
+# Step 3: Initialize two random centroids
+indices = np.random.choice(len(X), 2, replace=False)
+centroids = X[indices]
+
+# Show Initial Centroids
+plt.scatter(X[:, 0], X[:, 1], marker='o', edgecolor='k', s=50, color='gray')
+plt.scatter(centroids[:, 0], centroids[:, 1], c='black', marker='X', s=200, label="Initial Centroids")
+plt.title("Step 2: Initial Random Centroids")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.legend()
+plt.show()
+
+# Function to assign clusters based on closest centroid
+def assign_clusters(X, centroids):
+    clusters = {0: [], 1: []}
+    for point in X:
+        dist1 = sum(abs(point - centroids[0]))  # Sum of absolute differences
+        dist2 = sum(abs(point - centroids[1]))
+        cluster = 0 if dist1 < dist2 else 1
+        clusters[cluster].append(point)
+    return clusters
+
+# Function to update centroids as the mean of assigned points
+def update_centroids(clusters):
+    new_centroids = []
+    for key in clusters:
+        cluster_points = np.array(clusters[key])
+        new_centroids.append(cluster_points.mean(axis=0))  # New centroid is the mean of points
+    return np.array(new_centroids)
+
+# Step 4: Run K-Means Algorithm
+for _ in range(10):
+    clusters = assign_clusters(X, centroids)
+    new_centroids = update_centroids(clusters)
+    if np.all(centroids == new_centroids):  # Stop if centroids don't change
+        break
+    centroids = new_centroids
+
+# Convert clusters dictionary to label format
+labels = np.zeros(len(X))
+for key in clusters:
+    for point in clusters[key]:
+        labels[np.where((X == point).all(axis=1))] = key
+
+# Step 5: Plot Final Clusters
+markers = ['o', 's']  # Different symbols for B&W printing
+for key in clusters:
+    cluster_points = np.array(clusters[key])
+    plt.scatter(cluster_points[:, 0], cluster_points[:, 1], marker=markers[key], edgecolor='k', s=50, label=f'Cluster {key + 1}')
+
+# Plot final centroids
+plt.scatter(centroids[:, 0], centroids[:, 1], c='black', marker='X', s=200, label="Final Centroids")
+
+plt.title("Step 3: Final Clustered Data")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.legend()
+plt.show()
