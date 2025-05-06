@@ -1,0 +1,38 @@
+import numpy as np
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score
+
+# XOR Dataset
+X = np.array([
+    [0, 0],
+    [0, 1],
+    [1, 0],
+    [1, 1]
+])
+y = np.array([0, 1, 1, 0])  # XOR output
+
+# 3-layer neural network: input (2) -> hidden (2) -> output (1)
+mlp = MLPClassifier(
+    hidden_layer_sizes=(2,),     # 1 hidden layer with 2 neurons
+    activation='tanh',           # Non-linear activation
+    solver='lbfgs',              # Good for small data
+    max_iter=10000,
+    random_state=1               # Ensures reproducibility
+)
+
+# Train the model
+mlp.fit(X, y)
+
+# Predict
+predictions = mlp.predict(X)
+probabilities = mlp.predict_proba(X)
+
+# Results
+print("✅ Predictions using scikit-learn MLP (3-layer NN):")
+print(predictions)
+
+print("\nOutput probabilities:")
+print(np.round(probabilities, 3))
+
+# Accuracy check
+print("\n✅ Accuracy:", accuracy_score(y, predictions))
