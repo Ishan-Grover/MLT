@@ -1,0 +1,85 @@
+#Aim: Implement logistic regression model for two class classification problem
+#5a:
+#1. Generate a 2 dimensional data for two classes which can be separated out with the help of a decision boundary.
+#2. Plot this data
+#3. Classify this data using logistic regression technique
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+# Function to generate dataset
+def generate_data(overlapping=False):
+    np.random.seed(42)  # Ensure reproducibility
+
+    if overlapping:
+        print("\nGenerating Overlapping Data (Realistic Scenario, ~87% Accuracy)")
+        #np.random.randn(N, 2): Generates N samples, each with two features (x, y coordinates),
+        #drawn from a normal distribution (Gaussian) centered at 0.
+        class_0 = np.random.randn(80, 2) + np.array([2, 2])  # Non-spam emails
+        class_1 = np.random.randn(70, 2) + np.array([1, 1])  # Spam emails
+    else:
+        print("\nGenerating Well-Separated Data (Ideal Scenario, 100% Accuracy)")
+        class_0 = np.random.randn(80, 2) + np.array([3, 3])  # Non-spam emails
+        class_1 = np.random.randn(70, 2) + np.array([-3, -3])  # Spam emails
+    #np.vstack((class_0, class_1)): Stacks both class data into one array → X contains all feature values.
+    X = np.vstack((class_0, class_1))
+    #np.hstack((np.zeros(80), np.ones(70))): Creates the labels (0 for non-spam, 1 for spam) and merges them into a single array y.
+    y = np.hstack((np.zeros(80), np.ones(70)))
+
+    print(f"Data Generated: {X.shape[0]} samples (Class 0: {class_0.shape[0]}, Class 1: {class_1.shape[0]})")
+    return X, y
+
+# Function to train and evaluate the model
+def train_logistic_regression(X, y, C_value):
+    print("\nSplitting data into train and test sets (80% train, 20% test)...")
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    print(f"Training Data: {X_train.shape[0]} samples, Testing Data: {X_test.shape[0]} samples")
+
+    print(f"\nTraining Logistic Regression Model (C = {C_value})...")
+    model = LogisticRegression(C=C_value)
+    model.fit(X_train, y_train)  # Train the model
+    print("Model Training Complete!")
+
+    print("\nMaking Predictions on Test Data...")
+    y_pred = model.predict(X_test)  # Predict labels on test data
+    accuracy = accuracy_score(y_test, y_pred)  # Compute accuracy
+
+    print(f"Model Accuracy: {accuracy * 100:.2f}%")
+    return model, accuracy
+
+# Function to plot decision boundary
+def plot_decision_boundary(model, X, y, title):
+    print(f"\nPlotting Decision Boundary for: {title}")
+
+    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+
+    xx, yy = np.meshgrid(np.linspace(x_min, x_max, 200), np.linspace(y_min, y_max, 200))
+
+    print("Predicting class labels for grid points...")
+    Z = model.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+
+    plt.contourf(xx, yy, Z, alpha=0.3, cmap='coolwarm')
+    plt.scatter(X[:, 0], X[:, 1], c=y, edgecolors='k', cmap='coolwarm')
+    plt.xlabel("Feature 1")
+    plt.ylabel("Feature 2")
+    plt.title(title)
+    plt.colorbar()
+    plt.show()
+    print("Plot Displayed!\n")
+
+# Case 1: 100% Accuracy (Perfectly Separated Data, High C)
+print("\nRunning Case 1: Perfect Data Separation (100% Accuracy)")
+X_perfect, y_perfect = generate_data(overlapping=False)
+model_perfect, acc_perfect = train_logistic_regression(X_perfect, y_perfect, C_value=100)
+plot_decision_boundary(model_perfect, X_perfect, y_perfect, "100% Accuracy - Perfect Data Separation")
+
+# Case 2: 87% Accuracy (Overlapping Data, Moderate C)
+print("\nRunning Case 2: Overlapping Data (87% Accuracy)")
+X_realistic, y_realistic = generate_data(overlapping=True)
+model_realistic, acc_realistic = train_logistic_regression(X_realistic, y_realistic, C_value=0.5)
+plot_decision_boundary(model_realistic, X_realistic, y_realistic, "87% Accuracy - Realistic Data")
