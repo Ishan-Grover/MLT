@@ -1,0 +1,62 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# OR Gate Truth Table
+data = np.array([
+    [0, 0, 0],
+    [0, 1, 1],
+    [1, 0, 1],
+    [1, 1, 1]
+])
+
+# Initialize Weights, Bias, and Learning Rate
+weights = np.random.uniform(-1, 1, size=2)
+bias = np.random.uniform(-1, 1)
+alpha = 0.1
+
+# Prepare plot
+fig, ax = plt.subplots(figsize=(8, 8))
+x0, y0 = data[data[:, 2] == 0][:, 0], data[data[:, 2] == 0][:, 1]
+x1, y1 = data[data[:, 2] == 1][:, 0], data[data[:, 2] == 1][:, 1]
+
+ax.scatter(x0, y0, color='red', label='Class 0 (y=0)', s=150)
+ax.scatter(x1, y1, color='blue', label='Class 1 (y=1)', s=150)
+
+# Set proper axis limits with padding
+ax.set_xlim(-0.5, 1.5)
+ax.set_ylim(-0.5, 1.5)
+
+# Plot Initial Decision Boundary
+x_values = np.linspace(-0.5, 1.5, 100)
+y_values = (-weights[0] * x_values - bias) / weights[1]
+ax.plot(x_values, y_values, color='gray', linestyle='--', label='Initial Decision Boundary', linewidth=2)
+
+# Train Perceptron
+for epoch in range(10):
+    print(f"Epoch {epoch+1}")
+    total_error = 0  # Track total error in an epoch
+    for x1, x2, target in data:
+        y = 1 if (weights[0] * x1 + weights[1] * x2 + bias) >= 0 else 0
+        error = target - y
+        weights[0] += alpha * error * x1
+        weights[1] += alpha * error * x2
+        bias += alpha * error
+        total_error += abs(error)  # Accumulate absolute errors
+        print(f"Weights: {weights}, Bias: {bias}, Error: {error}")
+
+    if total_error == 0:  # Stop training if no errors
+        print("Training Complete: Error = 0")
+        break
+
+# Plot Final Decision Boundary
+y_values = (-weights[0] * x_values - bias) / weights[1]
+ax.plot(x_values, y_values, color='black', linestyle='-', label='Final Decision Boundary', linewidth=2)
+
+ax.set_xlabel("$x_1$", fontsize=14)
+ax.set_ylabel("$x_2$", fontsize=14)
+ax.set_title("OR Gate Perceptron Training", fontsize=16)
+ax.set_xticks(np.arange(-0.5, 1.6, 0.5))
+ax.set_yticks(np.arange(-0.5, 1.6, 0.5))
+ax.grid(True, linestyle='--', alpha=0.6)
+ax.legend()
+plt.show()
