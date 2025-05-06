@@ -1,0 +1,53 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Step 1: Define the AND gate truth table
+data = np.array([
+    [0, 0, 0],
+    [0, 1, 0],
+    [1, 0, 0],
+    [1, 1, 1]
+])
+
+# Step 2: Separate data points for plotting
+#data[data[:, 2] == 0] selects only rows where y = 0:
+#data[data[:, 2] == 1] selects only rows where y = 1;
+#[:, 0]  # Extracts first column (x1 values)
+#[:, 1]  # Extracts second column (x2 values)
+x0, y0 = data[data[:, 2] == 0][:, 0], data[data[:, 2] == 0][:, 1]
+x1, y1 = data[data[:, 2] == 1][:, 0], data[data[:, 2] == 1][:, 1]
+
+# Step 3: Plot the truth table
+plt.figure(figsize=(6,6))
+plt.scatter(x0, y0, color='red', label='Class 0 (y=0)', s=100)
+plt.scatter(x1, y1, color='blue', label='Class 1 (y=1)', s=100)
+
+# Labels and grid
+plt.xlabel("$x_1$")
+plt.ylabel("$x_2$")
+plt.title("AND Gate Classification")
+plt.xticks([0,1])
+plt.yticks([0,1])
+plt.grid(True)
+plt.legend()
+#The perceptron computes: y = f(w1x1+w2x2+b)
+# Class 0:(0,0),(0,1),(1,0)
+# Class 1:(1,1)
+# Step 4: Define perceptron weights and bias
+w1, w2 = 1, 1  # Chosen weight values
+#Substituting w1 =1 and w2 =1:
+#x1+x2+b=0
+#Choosing a point on the decision boundary, such as (0.5, 0.5), and solving for b
+# 0.5+0.5+b=0 -> b=-1
+b = -1          # Bias calculated from decision boundary
+
+# Step 5: Define and plot the decision boundary
+x_values = np.linspace(-0.1, 1.1, 100)
+y_values = (1 - w1 * x_values) / w2  # Equation: x1 + x2 - 1 = 0
+#For every x_values[i], the corresponding y_values[i] is calculated using this formula.
+#This helps plot the decision boundary for the perceptron.
+plt.plot(x_values, y_values, color='black', linestyle='--', label='Decision Boundary')
+
+# Show plot
+plt.legend()
+plt.show()
