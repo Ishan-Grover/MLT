@@ -1,0 +1,106 @@
+#Apply PCA, visualize on iris dataset and then apply K Means clustering. Both different experiments.
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+import seaborn as sns
+
+# Load the dataset
+df = pd.read_csv('/content/Iris.csv')  # Adjust path if needed
+df.head()
+
+# Check the structure of the dataset
+print(df.columns)
+
+# Separate features and labels
+X = df.iloc[:, :-1]  # Assuming last column is species/label
+y = df.iloc[:, -1] # Last column is the target (species)
+
+# Visualize original data (first 3 dimensions)
+from mpl_toolkits.mplot3d import Axes3D
+
+fig = plt.figure(figsize=(8, 6))
+ax = fig.add_subplot(111, projection='3d')
+
+# Use first 3 features for plotting
+#pd.factorize(y)[0] converts categorical labels (species names) into numbers.
+#cmap='viridis': Color map for different species.
+#s=60: Marker size.
+ax.scatter(X.iloc[:, 0], X.iloc[:, 1], X.iloc[:, 2], c=pd.factorize(y)[0], cmap='viridis', s=60)
+ax.set_xlabel(X.columns[0])
+ax.set_ylabel(X.columns[1])
+ax.set_zlabel(X.columns[2])
+plt.title('Original Iris Data (First 3 Features)')
+plt.show()
+
+# Standardize the features
+# PCA is affected by the scale of data. If one feature has values in the 100s and
+#another in decimals, PCA will be biased toward the larger-scaled feature.
+#StandardScaler() standardizes your data to have mean = 0 and standard deviation = 1.
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Apply PCA to reduce to 2 dimensions
+pca = PCA(n_components=2)
+#fit_transform():
+#fit: Computes how to rotate the data to new axes (principal components).
+#transform: Projects the original data into the new 2D space.
+X_pca = pca.fit_transform(X_scaled)
+
+# Create a new DataFrame for visualization
+pca_df = pd.DataFrame(data=X_pca, columns=['PC1', 'PC2'])
+pca_df['Species'] = y.values
+pca_df.head()
+
+plt.figure(figsize=(8,6))
+#hue='Species' colors each point by the actual species.
+sns.scatterplot(data=pca_df, x='PC1', y='PC2', hue='Species', palette='Set1', s=100)
+plt.title('Iris Data after PCA (2D)')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+from sklearn.cluster import KMeans
+
+# Choose number of clusters (we know there are 3 species in Iris)
+kmeans = KMeans(n_clusters=3, random_state=42)
+clusters = kmeans.fit_predict(X_pca)
+
+# Add cluster labels to the PCA DataFrame
+pca_df['Cluster'] = clusters
+
+
+plt.figure(figsize=(8,6))
+sns.scatterplot(data=pca_df, x='PC1', y='PC2', hue='Cluster', palette='Set2', s=100)
+plt.title('K-Means Clustering on PCA-Reduced Iris Data')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.legend(title='Cluster')
+plt.grid(True)
+plt.show()
+
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+sns.scatterplot(ax=axes[0], data=pca_df, x='PC1', y='PC2', hue='Species', palette='Set1', s=100)
+axes[0].set_title('Actual Species')
+
+sns.scatterplot(ax=axes[1], data=pca_df, x='PC1', y='PC2', hue='Cluster', palette='Set2', s=100)
+axes[1].set_title('K-Means Clusters')
+
+plt.show()
+
+
+centers = kmeans.cluster_centers_
+
+plt.figure(figsize=(8,6))
+sns.scatterplot(data=pca_df, x='PC1', y='PC2', hue='Cluster', palette='Set2', s=100)
+plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, marker='X', label='Centroids')
+plt.title('K-Means with Cluster Centroids')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
