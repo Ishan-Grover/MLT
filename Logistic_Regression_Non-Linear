@@ -1,0 +1,56 @@
+#5b: Design a logistic regression method for a toy data which require non linear decision model (for example circle)
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import accuracy_score
+
+#1.Generate circular toy dataset
+np.random.seed(42)
+n_samples = 200
+
+#Generate points in a square region
+X = np.random.uniform(-1, 1, (n_samples, 2))
+
+#Defines the classification rule
+#If a point (x,y)satisfies x^2 + y^2 < 0.5, it's inside the circle (Class 1).
+#Otherwise, it's outside (Class 0).
+#.astype(int) converts True/False values into 1 (inside) and 0 (outside).
+y = (X[:, 0]**2 + X[:, 1]**2 < 0.5).astype(int)  # Circle radius ~sqrt(0.5)
+
+#2. Split dataset
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 3. Create a pipeline with polynomial transformation
+model = Pipeline([
+    ("poly_features", PolynomialFeatures(degree=2)),  # Adding x^2 and y^2 for non-linearity
+    #PolynomialFeatures(degree=2)
+    #Converts X = [x, y] into
+    # → [x, y, x², y², xy]
+    #This allows logistic regression to learn a circular decision boundary.
+    ("logistic_regression", LogisticRegression())
+])
+
+# 4. Train model
+model.fit(X_train, y_train)
+
+# 5. Predict and evaluate
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Logistic Regression Accuracy: {accuracy:.2f}")
+
+# 6. Plot decision boundary
+xx, yy = np.meshgrid(np.linspace(-1, 1, 200), np.linspace(-1, 1, 200))
+X_grid = np.c_[xx.ravel(), yy.ravel()]
+X_grid_poly = model.named_steps["poly_features"].transform(X_grid)  # Apply polynomial transformation
+Z = model.named_steps["logistic_regression"].predict(X_grid_poly).reshape(xx.shape)
+
+plt.contourf(xx, yy, Z, alpha=0.3, cmap="coolwarm")
+plt.scatter(X[:, 0], X[:, 1], c=y, edgecolors='k', cmap="coolwarm")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.title("Logistic Regression - Non-Linear Decision Boundary")
+plt.colorbar()
+plt.show()
