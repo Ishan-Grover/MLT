@@ -1,0 +1,106 @@
+#1.Take single input single output data with 50 values
+#2. Plot this data
+#3. The aim of this experiment is to obtain a best fit straight line for this data set
+#4. Initialise random values of theta 0 and theta 1
+#5. Calculate the cost function based on these random values of theta 0 and theta 1
+#6. Plot a straight line on the give data set
+#7. Update parameters theta 0 and theta 1 Using gradient descent algorithm by taking the learning rate
+#8. Now run your code for 50 iterations
+#9. Plot the cost function vs no. of iterations
+#10. Now by visual inspection of this curve modify the learning rate
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. Generate single input single output data with 50 values
+X = np.linspace(0, 10, 50)  # Input data
+Y = 3 * X + 7 + np.random.normal(0, 5, 50)  # Linear relationship with noise
+
+# 2. Plot this data
+plt.figure(figsize=(8, 6))
+plt.scatter(X, Y, color="blue", label="Data Points")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.title("Generated Data")
+plt.legend()
+plt.show()
+
+# 3. Aim: To obtain the best fit straight line for this data set
+# 4. Initialize random values for theta0 (bias) and theta1 (weight)
+theta0 = np.random.rand()
+theta1 = np.random.rand()
+
+# 5. Calculate the cost function (Mean Squared Error)
+def calculate_cost(X, Y, theta0, theta1):
+    predictions = theta0 + theta1 * X
+    return np.mean((Y - predictions) ** 2)
+
+# 6. Plot a straight line on the given data set (initial random line)
+initial_predictions = theta0 + theta1 * X
+
+plt.figure(figsize=(8, 6))
+plt.scatter(X, Y, color="blue", label="Data Points")
+plt.plot(X, initial_predictions, color="red", label="Initial Straight Line")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.title("Initial Straight Line on Data")
+plt.legend()
+plt.show()
+
+# 7. Gradient Descent Algorithm
+def gradient_descent(X, Y, theta0, theta1, learning_rate, iterations):
+    costs = []  # To store cost at each iteration
+    n = len(X)  # Number of data points
+
+    for i in range(iterations):
+        # Predictions
+        predictions = theta0 + theta1 * X
+
+        # Compute gradients
+        d_theta0 = -(2 / n) * np.sum(Y - predictions)
+        d_theta1 = -(2 / n) * np.sum(X * (Y - predictions))
+
+        # Update parameters
+        theta0 -= learning_rate * d_theta0
+        theta1 -= learning_rate * d_theta1
+
+        # Calculate and store the cost
+        cost = calculate_cost(X, Y, theta0, theta1)
+        costs.append(cost)
+
+        # Print progress
+        print(f"Iteration {i + 1}: Cost = {cost}, Theta0 = {theta0}, Theta1 = {theta1}")
+
+    return theta0, theta1, costs
+
+# 8. Run the code for 50 iterations
+learning_rate = 0.01  # Initial learning rate
+iterations = 50
+theta0, theta1, costs = gradient_descent(X, Y, theta0, theta1, learning_rate, iterations)
+
+# 9. Plot the cost function vs number of iterations
+plt.figure(figsize=(8, 6))
+plt.plot(range(1, len(costs) + 1), costs, color="green", label="Cost Function")
+plt.xlabel("Number of Iterations")
+plt.ylabel("Cost")
+plt.title("Cost Function vs Number of Iterations")
+plt.legend()
+plt.show()
+
+# 10. Modify the learning rate by inspecting the curve and rerun if necessary
+# If the cost decreases too slowly or oscillates, adjust the learning rate and rerun
+
+# Plot the final straight line after optimization
+final_predictions = theta0 + theta1 * X
+
+plt.figure(figsize=(8, 6))
+plt.scatter(X, Y, color="blue", label="Data Points")
+plt.plot(X, final_predictions, color="orange", label="Best Fit Line")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.title("Final Best Fit Line on Data")
+plt.legend()
+plt.show()
+
+# Print final parameters
+print(f"Final Theta0 (Bias): {theta0}")
+print(f"Final Theta1 (Weight): {theta1}")
